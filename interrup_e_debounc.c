@@ -79,7 +79,7 @@ sleep_us(100);
 //Parte da configuração dos números, coloquei em função pq era uma mera repetição.
 void digit_complement(const uint8_t *digit_leds, uint16_t count){
     for (size_t i = 0; i < count; ++i) {
-        setled(digit_leds[i], 1, 0, 1);
+        setled(digit_leds[i], 0, 0, 1);
     }
         display();    
 }
