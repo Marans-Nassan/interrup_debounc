@@ -76,7 +76,6 @@ void digit_complement(const uint8_t *digit_leds, uint16_t count){
     for (size_t i = 0; i < count; ++i) {
         setled(digit_leds[i], 0, 1, 1);
     }    
-display();
 }
 
 void digito0(){
@@ -100,7 +99,7 @@ digit_complement(digit_leds, sizeof(digit_leds) / sizeof(digit_leds[0]));
 }
 
 void digito4(){
-const uint8_t digit_leds[] = {6, 7, 8, 13, 17, 18};
+const uint8_t digit_leds[] = {7, 8, 11, 13, 18};
 digit_complement(digit_leds, sizeof(digit_leds) / sizeof(digit_leds[0]));
 }
 
@@ -144,6 +143,7 @@ void led_clear(){
 void numerostela(){
 led_clear();
 digitos[numerotela]();
+display();
 }
 
 static void gpio_irq_handler(uint gpio, uint32_t events){ // eventos da interrupção
@@ -151,10 +151,14 @@ uint32_t current_time = to_us_since_boot(get_absolute_time()); //debounce
     if(current_time - last_time > 200000){
         last_time = current_time;
         if(gpio == botao_A){
-            numerotela = (numerotela + 1) % 10;
+            led_clear();
+            digito0(); //numerotela = (numerotela + 1) % 10;
+            display();
         }
             else if(gpio == botao_B) {
-               numerotela = (numerotela + 9) % 10; 
+               led_clear();
+               digito2(); //numerotela = (numerotela + 9) % 10; 
+               display();
             }
             atualiza_display = true;
     }
@@ -164,7 +168,9 @@ int main(){
 ledinit();
 botinit();
 minit(matriz);
-digitos[0]();
+digito6();
+display();
+
 gpio_set_irq_enabled_with_callback (botao_A, GPIO_IRQ_EDGE_FALL, true, &gpio_irq_handler); //Interrupção A
 gpio_set_irq_enabled_with_callback (botao_B, GPIO_IRQ_EDGE_FALL, true, &gpio_irq_handler); //Interrupção A
 add_repeating_timer_ms(100, repeating_timer_callback, NULL, &timer); //timer led 
