@@ -143,7 +143,6 @@ void led_clear(){
 void numerostela(){
 led_clear();
 digitos[numerotela]();
-display();
 }
 
 static void gpio_irq_handler(uint gpio, uint32_t events){ // eventos da interrupção
@@ -165,7 +164,7 @@ int main(){
 ledinit();
 botinit();
 minit(matriz);
-digito0();
+digitos[0];
 gpio_set_irq_enabled_with_callback (botao_A, GPIO_IRQ_EDGE_FALL, true, &gpio_irq_handler); //Interrupção A
 gpio_set_irq_enabled_with_callback (botao_B, GPIO_IRQ_EDGE_FALL, true, &gpio_irq_handler); //Interrupção A
 add_repeating_timer_ms(100, repeating_timer_callback, NULL, &timer); //timer led 
