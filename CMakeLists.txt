@@ -58,7 +58,7 @@ target_include_directories(interrup_e_debounc PRIVATE
 
 # Add any user requested libraries
 target_link_libraries(interrup_e_debounc 
-        
+        hardware_pio
         )
 
 pico_add_extra_outputs(interrup_e_debounc)
