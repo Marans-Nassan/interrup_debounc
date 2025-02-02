@@ -155,7 +155,6 @@ static void gpio_irq_handler(uint gpio, uint32_t events) { //checando se houve i
     (gpio == botao_B) ? botao_B_pressionado = true : (void)0;
 }
 
-    
 int main(){
 ledinit();
 botinit();
@@ -166,10 +165,11 @@ gpio_set_irq_enabled_with_callback (botao_A, GPIO_IRQ_EDGE_FALL, true, &gpio_irq
 gpio_set_irq_enabled_with_callback (botao_B, GPIO_IRQ_EDGE_FALL, true, &gpio_irq_handler); //Interrupção A
 add_repeating_timer_ms(100, repeating_timer_callback, NULL, &timer); //timer led 
     while (true) {
-        uint64_t tempo_atual = to_us_since_boot(get_absolute_time()) / 1000; 
+        uint64_t tempo_atual = to_us_since_boot(get_absolute_time()) / 2000; 
         //debounce em conjunto com os efeitos da interrupção
         if (botao_A_pressionado && (tempo_atual - ultimo_tempo_A > 1000)) { 
         ultimo_tempo_A = tempo_atual;
+        
         numerotela = (numerotela + 1) % 10;
         atualiza_display = true;
         botao_A_pressionado = false;
@@ -177,6 +177,7 @@ add_repeating_timer_ms(100, repeating_timer_callback, NULL, &timer); //timer led
 
         if (botao_B_pressionado && (tempo_atual - ultimo_tempo_B > 1000)) {
         ultimo_tempo_B = tempo_atual;
+        
         numerotela = (numerotela + 9) % 10;
         atualiza_display = true;
         botao_B_pressionado = false;
