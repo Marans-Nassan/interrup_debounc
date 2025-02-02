@@ -19,7 +19,6 @@ pixeis leds[matriz_led];
 PIO pio;
 uint sm;
 
-struct repeating_timer timer;
 uint8_t i;
 static volatile uint64_t last_time;
 static volatile uint8_t numerotela = 0;
@@ -28,7 +27,11 @@ void ledinit(){ // iniciando led
         gpio_init(13);
         gpio_set_dir(13, 1);
         gpio_put(13, 0);
-}   
+}
+
+const void ledlig(){
+    gpio_put(13, !gpio_get(13));
+}
 
 void botinit(){
     for(i = 5; i < 7; i ++){ // iniciando botões
@@ -36,10 +39,6 @@ void botinit(){
         gpio_set_dir(i, 0);
         gpio_pull_up(i);
     }
-}
-
-bool repeating_timer_callback(struct repeating_timer *t){ // Manutenção do led piscando 5x por segundo
-gpio_put(13, !gpio_get(13));
 }
 
 void minit(uint pin){
@@ -159,7 +158,6 @@ uint32_t current_time = to_us_since_boot(get_absolute_time()); //debounce
     }
 }
     
-
 int main(){
 ledinit();
 botinit();
@@ -167,8 +165,8 @@ minit(matriz);
 digitos[0];
 gpio_set_irq_enabled_with_callback (botao_A, GPIO_IRQ_EDGE_FALL, true, &gpio_irq_handler); //Interrupção A
 gpio_set_irq_enabled_with_callback (botao_B, GPIO_IRQ_EDGE_FALL, true, &gpio_irq_handler); //Interrupção A
-add_repeating_timer_ms(100, repeating_timer_callback, NULL, &timer); //timer led 
     while (true) {
-        sleep_ms(1);
+    ledlig();
+        sleep_ms(100);
     }
 }
