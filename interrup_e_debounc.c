@@ -23,7 +23,7 @@ struct repeating_timer timer;
 uint8_t i;
 static volatile uint64_t last_time;
 static volatile uint8_t numerotela = 0;
-
+static volatile bool atualiza_display;
 void ledinit(){ // iniciando led
         gpio_init(13);
         gpio_set_dir(13, 1);
@@ -40,6 +40,7 @@ void botinit(){
 
 bool repeating_timer_callback(struct repeating_timer *t){ // Manutenção do led piscando 5x por segundo
 gpio_put(13, !gpio_get(13));
+return true;
 }
 
 void minit(uint pin){
@@ -155,20 +156,23 @@ uint32_t current_time = to_us_since_boot(get_absolute_time()); //debounce
             else if(gpio == botao_B) {
                numerotela = (numerotela + 9) % 10; 
             }
-            numerostela();
+            atualiza_display = true;
     }
 }
     
-
 int main(){
 ledinit();
 botinit();
 minit(matriz);
-digitos[0];
+digitos[0]();
 gpio_set_irq_enabled_with_callback (botao_A, GPIO_IRQ_EDGE_FALL, true, &gpio_irq_handler); //Interrupção A
 gpio_set_irq_enabled_with_callback (botao_B, GPIO_IRQ_EDGE_FALL, true, &gpio_irq_handler); //Interrupção A
 add_repeating_timer_ms(100, repeating_timer_callback, NULL, &timer); //timer led 
     while (true) {
+        if(atualiza_display){
+            numerostela();
+            atualiza_display = false;
+        }
         sleep_ms(1);
     }
 }
