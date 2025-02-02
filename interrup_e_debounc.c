@@ -24,6 +24,11 @@ uint8_t i;
 static volatile uint64_t last_time;
 static volatile uint8_t numerotela = 0;
 static volatile bool atualiza_display;
+uint64_t ultimo_tempo_A = 0;
+uint64_t ultimo_tempo_B = 0;
+volatile bool botao_A_pressionado = false;
+volatile bool botao_B_pressionado = false;
+
 void ledinit(){ // iniciando led
         gpio_init(13);
         gpio_set_dir(13, 1);
@@ -75,60 +80,61 @@ sleep_us(100);
 void digit_complement(const uint8_t *digit_leds, uint16_t count){
     for (size_t i = 0; i < count; ++i) {
         setled(digit_leds[i], 0, 1, 1);
-    }    
+    }
+        display();    
 }
 
 void digito0(){
-const uint8_t digit_leds[] = {6, 7, 8, 11, 13, 16, 17, 18};
+const uint8_t digit_leds[] = {24, 23, 22, 21, 20, 15, 19, 14, 10, 5, 9, 4, 3, 2, 1, 0};
 digit_complement(digit_leds, sizeof(digit_leds) / sizeof(digit_leds[0]));
 }
 
 void digito1(){
-const uint8_t digit_leds[] = {8, 13, 18};
+const uint8_t digit_leds[] = {22, 17, 12, 7, 2};
 digit_complement(digit_leds, sizeof(digit_leds) / sizeof(digit_leds[0]));
 }
 
 void digito2(){
-const uint8_t digit_leds[] = {6, 7, 8, 13, 16, 17, 18};
+const uint8_t digit_leds[] = {24, 23, 22, 21, 20, 18, 12, 6, 4, 3, 2, 1, 0};
 digit_complement(digit_leds, sizeof(digit_leds) / sizeof(digit_leds[0]));
 }
 
 void digito3(){
-const uint8_t digit_leds[] = {6, 7, 8, 13, 17, 18};
+const uint8_t digit_leds[] = {24, 23, 22, 21, 20, 19, 14, 13, 12, 11, 10, 9, 4, 3, 2, 1, 0};
 digit_complement(digit_leds, sizeof(digit_leds) / sizeof(digit_leds[0]));
 }
 
 void digito4(){
-const uint8_t digit_leds[] = {7, 8, 11, 13, 18};
+const uint8_t digit_leds[] = {24, 15, 14, 13, 12, 11, 10, 20, 19, 9, 0};
 digit_complement(digit_leds, sizeof(digit_leds) / sizeof(digit_leds[0]));
 }
 
 void digito5(){
-const uint8_t digit_leds[] = {6, 7, 8, 11, 17, 18};
+const uint8_t digit_leds[] = {24, 23, 22, 21, 20, 15, 14, 13, 12, 11, 10, 9, 4, 3, 2, 1, 0};
 digit_complement(digit_leds, sizeof(digit_leds) / sizeof(digit_leds[0]));
 }
 
 void digito6(){
-const uint8_t digit_leds[] = {6, 7, 8, 11, 13, 16, 17, 18};
+const uint8_t digit_leds[] = {24, 23, 22, 21, 20, 15, 14, 13, 12, 11, 10, 9, 5, 4, 3, 2, 1, 0};
 digit_complement(digit_leds, sizeof(digit_leds) / sizeof(digit_leds[0]));
 }
 
 void digito7(){
-const uint8_t digit_leds[] = {6, 7, 8, 13};
+const uint8_t digit_leds[] = {24, 23, 22, 21, 20, 18, 12, 6, 4};
 digit_complement(digit_leds, sizeof(digit_leds) / sizeof(digit_leds[0]));
 }
 
 void digito8(){
-const uint8_t digit_leds[] = {6, 7, 8, 11, 13, 16, 17, 18};
+const uint8_t digit_leds[] = {24, 23, 22, 21, 20, 15, 19, 14, 13, 12, 11, 10, 5, 9, 4, 3, 2, 1, 0};
 digit_complement(digit_leds, sizeof(digit_leds) / sizeof(digit_leds[0]));
 }
 
 void digito9(){
-const uint8_t digit_leds[] = {6, 7, 8, 11, 13, 17, 18};
+const uint8_t digit_leds[] = {24, 23, 22, 21, 20, 15, 19, 14, 13, 12, 11, 10, 9, 0};
 digit_complement(digit_leds, sizeof(digit_leds) / sizeof(digit_leds[0]));
 }
 
-void (*digitos[10])() = {
+static void (*digitos[10])() = {
     digito0, digito1, digito2, digito3, digito4,
     digito5, digito6, digito7, digito8, digito9
 };
@@ -137,48 +143,53 @@ void led_clear(){
     for(i = 0; i < matriz_led; i++){
         setled(i, 0, 0, 0);
     }
-    display();
 }
 
 void numerostela(){
 led_clear();
 digitos[numerotela]();
-display();
 }
 
-static void gpio_irq_handler(uint gpio, uint32_t events){ // eventos da interrupção
-uint32_t current_time = to_us_since_boot(get_absolute_time()); //debounce
-    if(current_time - last_time > 200000){
-        last_time = current_time;
-        if(gpio == botao_A){
-            led_clear();
-            digito0(); //numerotela = (numerotela + 1) % 10;
-            display();
-        }
-            else if(gpio == botao_B) {
-               led_clear();
-               digito2(); //numerotela = (numerotela + 9) % 10; 
-               display();
-            }
-            atualiza_display = true;
+static void gpio_irq_handler(uint gpio, uint32_t events) {
+    if (gpio == botao_A) {
+        botao_A_pressionado = true;
+    } 
+    else if (gpio == botao_B) {
+        botao_B_pressionado = true;
     }
 }
+
     
 int main(){
 ledinit();
 botinit();
 minit(matriz);
-digito6();
-display();
+digitos[numerotela]();
 
 gpio_set_irq_enabled_with_callback (botao_A, GPIO_IRQ_EDGE_FALL, true, &gpio_irq_handler); //Interrupção A
 gpio_set_irq_enabled_with_callback (botao_B, GPIO_IRQ_EDGE_FALL, true, &gpio_irq_handler); //Interrupção A
 add_repeating_timer_ms(100, repeating_timer_callback, NULL, &timer); //timer led 
     while (true) {
-        if(atualiza_display){
+        uint64_t tempo_atual = to_us_since_boot(get_absolute_time()) / 1000;  // Tempo em ms
+
+        if (botao_A_pressionado && (tempo_atual - ultimo_tempo_A > 2000)) {
+        ultimo_tempo_A = tempo_atual;
+        numerotela = (numerotela + 1) % 10;
+        atualiza_display = true;
+        botao_A_pressionado = false;
+        }
+
+        if (botao_B_pressionado && (tempo_atual - ultimo_tempo_B > 2000)) {
+        ultimo_tempo_B = tempo_atual;
+        numerotela = (numerotela + 9) % 10;
+        atualiza_display = true;
+        botao_B_pressionado = false;
+        }
+
+            if (atualiza_display) {
             numerostela();
             atualiza_display = false;
-        }
-        sleep_ms(1);
+            }
+    sleep_ms(1);
     }
 }
