@@ -45,7 +45,7 @@ pico_generate_pio_header(interrup_e_debounc ${CMAKE_CURRENT_LIST_DIR}/ws2812.pio
 
 # Modify the below lines to enable/disable output over UART/USB
 pico_enable_stdio_uart(interrup_e_debounc 0)
-pico_enable_stdio_usb(interrup_e_debounc 0)
+pico_enable_stdio_usb(interrup_e_debounc 1)
 
 # Add the standard library to the build
 target_link_libraries(interrup_e_debounc
